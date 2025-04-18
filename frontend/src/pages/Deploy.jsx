@@ -1,13 +1,45 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
+import { useParams } from 'react-router-dom';
+import axios from 'axios';
 import { FiPlus, FiEdit, FiSave, FiTrash, FiGithub, FiGitBranch } from 'react-icons/fi';
 
 const Deploy = () => {
     const [selectedBranch, setSelectedBranch] = useState('');
     const [envVars, setEnvVars] = useState([]);
-    const dummyBranches = ['main', 'dev', 'feature/login', 'release/v1.0'];
-    const dummyUsername = 'johndoe';
-    const dummyRepo = 'awesome-app';
+    const [branches, setBranches] = useState([]);
+    const [loadingBranches, setLoadingBranches] = useState(true);
+    const [errorBranches, setErrorBranches] = useState(false);
+    const { username, repo } = useParams();
     const envVarContainerRef = useRef(null);
+
+    useEffect(() => {
+        const fetchBranches = async () => {
+            try {
+                const response = await axios.get(`http://localhost:5000/api/github/branches/${username}/${repo}`);
+                console.log("Fetched branches:", response.data);
+
+                const branchList = Array.isArray(response.data)
+                    ? response.data
+                    : Array.isArray(response.data.branches)
+                        ? response.data.branches
+                        : [];
+
+                if (branchList.length === 0) {
+                    console.warn("No branches found");
+                    setErrorBranches(true);
+                }
+
+                setBranches(branchList);
+            } catch (error) {
+                console.error('Error fetching branches:', error);
+                setErrorBranches(true);
+            } finally {
+                setLoadingBranches(false);
+            }
+        };
+
+        fetchBranches();
+    }, [username, repo]);
 
     const handleAddEnvVar = () => {
         setEnvVars([...envVars, { key: '', value: '', isEditing: true }]);
@@ -41,18 +73,19 @@ const Deploy = () => {
         if (envVarContainerRef.current) {
             envVarContainerRef.current.scrollTo({
                 top: envVarContainerRef.current.scrollHeight,
-                behavior: 'smooth'
+                behavior: 'smooth',
             });
         }
     };
 
     const handleDeploy = () => {
         console.log('Deploying with:', {
-            username: dummyUsername,
-            repo: dummyRepo,
+            username,
+            repo,
             branch: selectedBranch,
             envVars,
         });
+        // Trigger deployment logic here
     };
 
     const isAddButtonDisabled = () => {
@@ -65,7 +98,7 @@ const Deploy = () => {
     return (
         <div className="min-h-screen bg-[#0d0d0d] text-white flex items-center justify-center p-6">
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 max-w-7xl w-full">
-                {/* Left Panel - Deployment Info */}
+                {/* Left Panel */}
                 <div className="bg-[#111] border border-gray-800 rounded-3xl p-6 shadow-2xl h-[600px] flex flex-col">
                     <h2 className="text-2xl font-bold mb-6 text-center">Deployment Details</h2>
 
@@ -74,25 +107,38 @@ const Deploy = () => {
                         <div className="flex items-center gap-6 text-white text-base font-medium">
                             <div className="flex items-center gap-1">
                                 <FiGithub className="text-gray-400" />
+                                <span>{username}</span>
                                 <span className="text-gray-400">/</span>
-                                <span>{dummyRepo}</span>
+                                <span>{repo}</span>
                             </div>
 
                             <div className="flex items-center gap-1">
                                 <FiGitBranch className="text-gray-400" />
-                                <select
-                                    value={selectedBranch}
-                                    onChange={(e) => setSelectedBranch(e.target.value)}
-                                    className="bg-transparent text-white focus:outline-none cursor-pointer appearance-none pr-6"
-                                    style={{ WebkitAppearance: 'none' }}
-                                >
-                                    <option value="" disabled>Select a branch</option>
-                                    {dummyBranches.map((branch, i) => (
-                                        <option key={i} value={branch} className="bg-[#111] text-white">
-                                            {branch}
-                                        </option>
-                                    ))}
-                                </select>
+                                {loadingBranches ? (
+                                    <span>Loading branches...</span>
+                                ) : errorBranches ? (
+                                    <span className="text-red-500">Failed to load branches</span>
+                                ) : (
+
+                                    <select
+                                        value={selectedBranch}
+                                        onChange={(e) => setSelectedBranch(e.target.value)}
+                                        className="bg-transparent text-white focus:outline-none cursor-pointer appearance-none pr-6"
+                                        disabled={branches.length === 0}
+                                        style={{ WebkitAppearance: 'none' }}
+                                    >
+                                        {branches.map((branch, i) => (
+                                            <option
+                                                key={i}
+                                                value={branch.name}
+                                                className="bg-[#111] text-white"
+                                            >
+                                                {branch.name}
+                                            </option>
+                                        ))}
+                                    </select>
+
+                                )}
                             </div>
                         </div>
                     </div>
@@ -184,7 +230,7 @@ const Deploy = () => {
                     </div>
                 </div>
 
-                {/* Right Panel - Build Logs */}
+                {/* Right Panel - Logs */}
                 <div className="bg-[#111] border border-gray-800 rounded-3xl p-6 shadow-2xl h-[600px] w-full">
                     <h2 className="text-2xl font-bold mb-4 text-center">Build Logs</h2>
                     <div className="h-[calc(100%-50px)] overflow-y-auto bg-[#111] border border-gray-700 rounded-xl p-4">

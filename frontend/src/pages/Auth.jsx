@@ -103,8 +103,6 @@ const Auth = () => {
 
         if (!validateEmail(email)) return setError('Please enter a valid email address.');
         if (!validatePassword(password)) return setError('Password must be at least 8 characters long and contain at least one letter and one number.');
-        if (!validateGithubProfile(githubProfile)) return setError('Please enter a valid GitHub profile URL starting with https://github.com/');
-
         try {
             setLocalLoading(true);
 
@@ -331,7 +329,7 @@ const Auth = () => {
                                         {/* Git URL*/}
                                         <input
                                             type="text"
-                                            placeholder="GitHub Profile URL"
+                                            placeholder="GitHub Profile"
                                             value={githubProfile}
                                             onChange={(e) => setGithubProfile(e.target.value)}
                                             className={inputClass}

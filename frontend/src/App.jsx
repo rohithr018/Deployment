@@ -31,7 +31,7 @@ const AppLayout = () => {
           <Route path="/home" element={<PrivateRoute element={<Home />} />} />
           <Route path="/dashboard" element={<PrivateRoute element={<Dashboard />} />} />
           <Route path="/account-settings" element={<PrivateRoute element={<AccountSettings />} />} />
-          <Route path="/deploy" element={<PrivateRoute element={<Deploy />} />} />
+          <Route path="/deploy/:username/:repo" element={<PrivateRoute element={<Deploy />} />} />
 
           {/* Auth Route */}
           <Route path="/auth" element={<Auth />} />

@@ -3,7 +3,7 @@ import mongoose from 'mongoose';
 import dotenv from 'dotenv';
 import cors from 'cors'; // Optional: to allow cross-origin requests
 import authRoutes from './routes/auth.routes.js';
-
+import gitRoutes from './routes/git.routes.js';
 
 // Load environment variables from .env file
 dotenv.config();
@@ -16,6 +16,7 @@ app.use(cors()); // Enable CORS for cross-origin requests (optional, but useful 
 
 // Routes
 app.use('/api/auth', authRoutes); // Auth routes (login, register)
+app.use('/api/github', gitRoutes);
 
 // MongoDB Connection
 mongoose.connect(process.env.MONGO_URI)
