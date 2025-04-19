@@ -75,23 +75,17 @@ jobs:
       - name: Checkout Code
         uses: actions/checkout@v3
 
-      - name: SonarQube Scanner
-        uses: sonarsource/sonarcloud-github-action@v2
+      - name: SonarQube Scan
+        uses: SonarSource/sonarqube-scan-action@v5.0.0
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
           SONAR_HOST_URL: ${{ vars.SONAR_HOST_URL }}
-
-      - name: SonarQube Quality Gate Check
-        run: |
-          echo "Checking SonarQube Quality Gate Status..."
-          QUALITY_GATE_STATUS=$(curl -s -u $SONAR_TOKEN: https://sonarcloud.io/api/qualitygates/project_status?projectKey=Deployment | jq -r '.projectStatus.status')
-
-          if [[ "$QUALITY_GATE_STATUS" != "OK" ]]; then
-            echo "SonarQube Quality Gate failed!"
-            exit 1
-          else
-            echo "SonarQube Quality Gate passed."
-          fi
+        
+      - name: SonarQube Quality Gate check
+        id: sonarqube-quality-gate-check
+        uses: sonarsource/sonarqube-quality-gate-action@master
+        with:
+          pollingTimeoutSec: 600
         env:
-          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-          SONAR_HOST_URL: ${{ vars.SONAR_HOST_URL }}
+            SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+            SONAR_HOST_URL: ${{ vars.SONAR_HOST_URL }}
