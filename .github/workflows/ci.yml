@@ -24,22 +24,13 @@ jobs:
         with:
           node-version: '18'
 
-      - name: Install backend dependencies
+      - name: Install dependencies
         working-directory: ./backend
         run: npm ci
 
-      - name: Run backend tests with coverage
+      - name: Run backend tests
         working-directory: ./backend
-        run: |
-          npm run test -- --coverage
-          mkdir -p ../coverage/backend
-          cp coverage/lcov.info ../coverage/backend/lcov.info
-
-      - name: Upload backend coverage artifact
-        uses: actions/upload-artifact@v3
-        with:
-          name: backend-coverage
-          path: coverage/backend/lcov.info
+        run: npm test
 
   frontend-tests:
     name: Frontend Tests
@@ -54,22 +45,13 @@ jobs:
         with:
           node-version: '18'
 
-      - name: Install frontend dependencies
+      - name: Install dependencies
         working-directory: ./frontend
         run: npm ci
 
-      - name: Run frontend tests with coverage
+      - name: Run frontend tests
         working-directory: ./frontend
-        run: |
-          npm run test -- --coverage
-          mkdir -p ../coverage/frontend
-          cp coverage/lcov.info ../coverage/frontend/lcov.info
-
-      - name: Upload frontend coverage artifact
-        uses: actions/upload-artifact@v3
-        with:
-          name: frontend-coverage
-          path: coverage/frontend/lcov.info
+        run: npm test
 
   gitleaks-scan:
     name: Gitleaks Scan
@@ -91,27 +73,21 @@ jobs:
     runs-on: ubuntu-latest
     needs: [backend-tests, frontend-tests]
 
-    env:
-      SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-      SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
-
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
 
-      - name: Download backend coverage
-        uses: actions/download-artifact@v3
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
         with:
-          name: backend-coverage
-          path: coverage/backend
+          node-version: '18'
 
-      - name: Download frontend coverage
-        uses: actions/download-artifact@v3
-        with:
-          name: frontend-coverage
-          path: coverage/frontend
+      - name: Install dependencies
+        run: |
+          npm ci --prefix backend
+          npm ci --prefix frontend
 
-      - name: Run SonarQube Analysis
+      - name: Run SonarQube scan
         uses: SonarSource/sonarqube-scan-action@v1.2
         with:
           projectBaseDir: .
