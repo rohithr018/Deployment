@@ -16,7 +16,7 @@ const Deploy = () => {
         const fetchBranches = async () => {
             try {
                 const response = await axios.get(`http://localhost:5000/api/github/branches/${username}/${repo}`);
-                console.log("Fetched branches:", response.data);
+                // console.log("Fetched branches:", response.data);
 
                 const branchList = Array.isArray(response.data)
                     ? response.data
@@ -25,8 +25,11 @@ const Deploy = () => {
                         : [];
 
                 if (branchList.length === 0) {
-                    console.warn("No branches found");
+                    // console.warn("No branches found");
                     setErrorBranches(true);
+                } else {
+                    setBranches(branchList);
+                    setSelectedBranch(branchList[0].name);
                 }
 
                 setBranches(branchList);
@@ -93,7 +96,7 @@ const Deploy = () => {
         return lastEnvVar?.key === '' || lastEnvVar?.value === '' || lastEnvVar?.isEditing;
     };
 
-    const isDeployDisabled = !selectedBranch || envVars.some(v => v.isEditing || !v.key || !v.value);
+    const isDeployDisabled = !selectedBranch?.length || envVars.some(v => v.isEditing || !v.key || !v.value);
 
     return (
         <div className="min-h-screen bg-[#0d0d0d] text-white flex items-center justify-center p-6">
