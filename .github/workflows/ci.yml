@@ -59,7 +59,7 @@ jobs:
       - name: Run Backend Tests
         run: |
           cd backend
-          npm test
+          npm run test
 
   test-frontend:
     runs-on: ubuntu-latest
@@ -77,7 +77,7 @@ jobs:
       - name: Run Frontend Tests
         run: |
           cd frontend
-          npm test
+          npm run test
 
   gitleaks:
     runs-on: ubuntu-latest
