@@ -53,19 +53,30 @@ jobs:
           cd backend
           npm test
 
-  gitleaks:
-    runs-on: ubuntu-latest
-    name: Run Gitleaks Scan
-    needs: [frontend, backend]
-    steps:
-      - name: Checkout Code
-        uses: actions/checkout@v3
+  security-check:
+    runs-on: ubuntu-latest  # Using a GitHub-hosted runner
+    needs: compile
 
-      - name: Set up Gitleaks
-        uses: zricethezav/gitleaks-action@v1.0.0
-        with:
-          config: '.gitleaks.toml'
-          leak-detection: true
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Trivy
+        run: |
+          sudo apt-get install -y wget apt-transport-https gnupg lsb-release
+          wget -qO - https://aquasecurity.github.io/trivy-repo/deb/public.key | sudo apt-key add -
+          echo deb https://aquasecurity.github.io/trivy-repo/deb $(lsb_release -sc) main | sudo tee -a /etc/apt/sources.list.d/trivy.list
+          sudo apt-get update -y
+          sudo apt-get install -y trivy
+
+      - name: Run Trivy FS Scan
+        run: trivy fs --format table -o fs-report.json .
+
+      - name: Install Gitleaks
+        run: sudo apt install gitleaks -y
+
+      - name: Run Gitleaks Code Scan
+        run: gitleaks detect source . -r gitleaks-report.json -f json
+
 
   # sonarqube:
   #   runs-on: ubuntu-latest
