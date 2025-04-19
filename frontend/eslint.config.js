@@ -9,7 +9,10 @@ export default [
     files: ['**/*.{js,jsx}'],
     languageOptions: {
       ecmaVersion: 2020,
-      globals: globals.browser,
+      globals: {
+        ...globals.browser,    // Keep existing globals (like for browsers)
+        ...globals.jest,       // Add Jest globals
+      },
       parserOptions: {
         ecmaVersion: 'latest',
         ecmaFeatures: { jsx: true },
@@ -19,6 +22,10 @@ export default [
     plugins: {
       'react-hooks': reactHooks,
       'react-refresh': reactRefresh,
+    },
+    env: {
+      node: true,
+      jest: true,
     },
     rules: {
       ...js.configs.recommended.rules,
