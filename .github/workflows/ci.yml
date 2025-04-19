@@ -69,7 +69,7 @@ jobs:
 
   sonarqube:
     runs-on: ubuntu-latest
-    name: Run SonarQube Scan
+    name: Run SonarQube Scan and Quality Gate Check
     needs: [frontend, backend]  
     steps:
       - name: Checkout Code
@@ -79,14 +79,7 @@ jobs:
         uses: sonarsource/sonarcloud-github-action@v2
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-
-  sonarqube-quality-gate:
-    runs-on: ubuntu-latest
-    name: Check SonarQube Quality Gate Status
-    needs: sonarqube 
-    steps:
-      - name: Checkout Code
-        uses: actions/checkout@v3
+          SONAR_HOST_URL: ${{ vars.SONAR_HOST_URL }}
 
       - name: SonarQube Quality Gate Check
         run: |
@@ -101,3 +94,4 @@ jobs:
           fi
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+          SONAR_HOST_URL: ${{ vars.SONAR_HOST_URL }}
