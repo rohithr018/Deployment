@@ -55,7 +55,7 @@ jobs:
 
   security-check:
     runs-on: ubuntu-latest  # Using a GitHub-hosted runner
-    needs: compile
+    needs: [frontend,backend]
 
     steps:
       - uses: actions/checkout@v4
@@ -78,25 +78,3 @@ jobs:
         run: gitleaks detect source . -r gitleaks-report.json -f json
 
 
-  # sonarqube:
-  #   runs-on: ubuntu-latest
-  #   name: Run SonarQube Scan and Quality Gate Check
-  #   needs: [frontend, backend]  
-  #   steps:
-  #     - name: Checkout Code
-  #       uses: actions/checkout@v3
-
-  #     - name: SonarQube Scan
-  #       uses: SonarSource/sonarqube-scan-action@v5.0.0
-  #       env:
-  #         SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-  #         SONAR_HOST_URL: ${{ vars.SONAR_HOST_URL }}
-        
-  #     - name: SonarQube Quality Gate check
-  #       id: sonarqube-quality-gate-check
-  #       uses: sonarsource/sonarqube-quality-gate-action@master
-  #       with:
-  #         pollingTimeoutSec: 600
-  #       env:
-  #           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-  #           SONAR_HOST_URL: ${{ vars.SONAR_HOST_URL }}
