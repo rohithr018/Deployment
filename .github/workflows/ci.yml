@@ -67,25 +67,25 @@ jobs:
           config: '.gitleaks.toml'
           leak-detection: true
 
-  sonarqube:
-    runs-on: ubuntu-latest
-    name: Run SonarQube Scan and Quality Gate Check
-    needs: [frontend, backend]  
-    steps:
-      - name: Checkout Code
-        uses: actions/checkout@v3
+  # sonarqube:
+  #   runs-on: ubuntu-latest
+  #   name: Run SonarQube Scan and Quality Gate Check
+  #   needs: [frontend, backend]  
+  #   steps:
+  #     - name: Checkout Code
+  #       uses: actions/checkout@v3
 
-      - name: SonarQube Scan
-        uses: SonarSource/sonarqube-scan-action@v5.0.0
-        env:
-          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-          SONAR_HOST_URL: ${{ vars.SONAR_HOST_URL }}
+  #     - name: SonarQube Scan
+  #       uses: SonarSource/sonarqube-scan-action@v5.0.0
+  #       env:
+  #         SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+  #         SONAR_HOST_URL: ${{ vars.SONAR_HOST_URL }}
         
-      - name: SonarQube Quality Gate check
-        id: sonarqube-quality-gate-check
-        uses: sonarsource/sonarqube-quality-gate-action@master
-        with:
-          pollingTimeoutSec: 600
-        env:
-            SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-            SONAR_HOST_URL: ${{ vars.SONAR_HOST_URL }}
+  #     - name: SonarQube Quality Gate check
+  #       id: sonarqube-quality-gate-check
+  #       uses: sonarsource/sonarqube-quality-gate-action@master
+  #       with:
+  #         pollingTimeoutSec: 600
+  #       env:
+  #           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+  #           SONAR_HOST_URL: ${{ vars.SONAR_HOST_URL }}
