@@ -56,7 +56,7 @@ jobs:
   gitleaks:
     runs-on: ubuntu-latest
     name: Run Gitleaks Scan
-    needs: [frontend, backend]  # Ensure this runs after frontend and backend jobs
+    needs: [frontend, backend]
     steps:
       - name: Checkout Code
         uses: actions/checkout@v3
@@ -70,23 +70,20 @@ jobs:
   sonarqube:
     runs-on: ubuntu-latest
     name: Run SonarQube Scan
-    needs: [frontend, backend]  # Ensure this runs after frontend and backend jobs
+    needs: [frontend, backend]  
     steps:
       - name: Checkout Code
         uses: actions/checkout@v3
 
       - name: SonarQube Scanner
         uses: sonarsource/sonarcloud-github-action@v2
-        with:
-          projectKey: '<your-sonar-project-key>'
-          organization: '<your-sonar-organization>'
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
 
   sonarqube-quality-gate:
     runs-on: ubuntu-latest
     name: Check SonarQube Quality Gate Status
-    needs: sonarqube  # Ensure this runs after SonarQube analysis
+    needs: sonarqube 
     steps:
       - name: Checkout Code
         uses: actions/checkout@v3
@@ -94,7 +91,7 @@ jobs:
       - name: SonarQube Quality Gate Check
         run: |
           echo "Checking SonarQube Quality Gate Status..."
-          QUALITY_GATE_STATUS=$(curl -s -u $SONAR_TOKEN: https://sonarcloud.io/api/qualitygates/project_status?projectKey=deployment | jq -r '.projectStatus.status')
+          QUALITY_GATE_STATUS=$(curl -s -u $SONAR_TOKEN: https://sonarcloud.io/api/qualitygates/project_status?projectKey=Deployment | jq -r '.projectStatus.status')
 
           if [[ "$QUALITY_GATE_STATUS" != "OK" ]]; then
             echo "SonarQube Quality Gate failed!"
