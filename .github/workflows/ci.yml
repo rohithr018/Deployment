@@ -9,26 +9,9 @@ on:
       - main
 
 jobs:
-  install-backend:
+  frontend:
     runs-on: ubuntu-latest
-    name: Install Backend Dependencies
-    steps:
-      - name: Checkout Code
-        uses: actions/checkout@v3
-
-      - name: Set up Node.js for Backend
-        uses: actions/setup-node@v3
-        with:
-          node-version: '16'
-
-      - name: Install Backend Dependencies
-        run: |
-          cd backend
-          npm install
-
-  install-frontend:
-    runs-on: ubuntu-latest
-    name: Install Frontend Dependencies
+    name: Frontend (Installing Dependencies + Testing)
     steps:
       - name: Checkout Code
         uses: actions/checkout@v3
@@ -43,10 +26,14 @@ jobs:
           cd frontend
           npm install
 
-  test-backend:
+      - name: Run Frontend Tests
+        run: |
+          cd frontend
+          npm test
+
+  backend:
     runs-on: ubuntu-latest
-    name: Backend Tests
-    needs: [install-backend]
+    name: Backend (Installing Dependencies + Testing)
     steps:
       - name: Checkout Code
         uses: actions/checkout@v3
@@ -56,32 +43,20 @@ jobs:
         with:
           node-version: '16'
 
+      - name: Install Backend Dependencies
+        run: |
+          cd backend
+          npm install
+
       - name: Run Backend Tests
         run: |
           cd backend
-          npm run test
-
-  test-frontend:
-    runs-on: ubuntu-latest
-    name: Frontend Tests
-    needs: [install-frontend]
-    steps:
-      - name: Checkout Code
-        uses: actions/checkout@v3
-
-      - name: Set up Node.js for Frontend
-        uses: actions/setup-node@v3
-        with:
-          node-version: '16'
-
-      - name: Run Frontend Tests
-        run: |
-          cd frontend
-          npm run test
+          npm test
 
   gitleaks:
     runs-on: ubuntu-latest
     name: Run Gitleaks Scan
+    needs: [frontend, backend]  # Ensure this runs after frontend and backend jobs
     steps:
       - name: Checkout Code
         uses: actions/checkout@v3
@@ -95,7 +70,7 @@ jobs:
   sonarqube:
     runs-on: ubuntu-latest
     name: Run SonarQube Scan
-    needs: [test-backend, test-frontend]
+    needs: [frontend, backend]  # Ensure this runs after frontend and backend jobs
     steps:
       - name: Checkout Code
         uses: actions/checkout@v3
@@ -105,5 +80,27 @@ jobs:
         with:
           projectKey: '<your-sonar-project-key>'
           organization: '<your-sonar-organization>'
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+
+  sonarqube-quality-gate:
+    runs-on: ubuntu-latest
+    name: Check SonarQube Quality Gate Status
+    needs: sonarqube  # Ensure this runs after SonarQube analysis
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v3
+
+      - name: SonarQube Quality Gate Check
+        run: |
+          echo "Checking SonarQube Quality Gate Status..."
+          QUALITY_GATE_STATUS=$(curl -s -u $SONAR_TOKEN: https://sonarcloud.io/api/qualitygates/project_status?projectKey=deployment | jq -r '.projectStatus.status')
+
+          if [[ "$QUALITY_GATE_STATUS" != "OK" ]]; then
+            echo "SonarQube Quality Gate failed!"
+            exit 1
+          else
+            echo "SonarQube Quality Gate passed."
+          fi
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
